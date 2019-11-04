@@ -123,20 +123,25 @@ class _SoundsPageState extends State<SoundsPage> {
     return Slider(
       activeColor: Colors.indigoAccent,
       label: "Tamaño de la imagen =",
-      value: 50.5,
-      min: 30.0,
-      max: 400.0,
+      value: 4.5,
+      min: 0.0,
+      max: 10.0,
     );
   }
 
   void modalListener(BuildContext context) {
     _soundManager.audioPlayer.onAudioPositionChanged.listen((Duration d) => {
-      setState(() => print(d))
+      //TODO PARSE MILLISECONDS (s) TO DOUBLE
+      setState(() => print(d.toString()))
     });
     _soundManager.audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) => {
       _modalController(context,state)
     });
     
+  }
+
+  void setCorrectPosition(Duration d) {
+    print(double.parse(d.toString()));
   }
 
   void _modalController(BuildContext context, AudioPlayerState state) {
