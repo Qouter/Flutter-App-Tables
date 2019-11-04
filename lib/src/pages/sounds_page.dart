@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -8,7 +9,9 @@ class SoundsPage extends StatefulWidget {
 }
 
 class _SoundsPageState extends State<SoundsPage> {
+
   SoundManager _soundManager = new SoundManager();
+  Duration _valorSlider = Duration(seconds: 200);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,7 @@ class _SoundsPageState extends State<SoundsPage> {
                 /// To convert this infinite list to a list with "n" no of items,
                 /// uncomment the following line:
                 /// if (index > n) return null;
-                return listItem(Colors.blue, index);
+                return listItem(Colors.blue, index,context);
               },
 
               /// Set childCount to limit no.of items
@@ -42,13 +45,20 @@ class _SoundsPageState extends State<SoundsPage> {
     );
   }
 
-  void _playAudio(int table) async {
-    _showModalSheet();
-    _soundManager.playLocal("$table.mp3").then((onValue) {});
-
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => {
+          modalListener(context)
+        });
   }
 
-  Widget listItem(Color color, int title) => FlatButton(
+  Future _playAudio(int table,context) async {
+    await _soundManager.playLocal("$table.mp3",context);
+  }
+
+  Widget listItem(Color color, int title,BuildContext context) => FlatButton(
         color: getRandomColor(),
         child: Center(
           child: Text(
@@ -60,7 +70,7 @@ class _SoundsPageState extends State<SoundsPage> {
                 fontWeight: FontWeight.bold),
           ),
         ),
-        onPressed: () => _playAudio(title),
+        onPressed: () => _playAudio(title,context),
       );
 
   Color getRandomColor() {
@@ -76,31 +86,72 @@ class _SoundsPageState extends State<SoundsPage> {
     return listColors[random.nextInt(listColors.length)];
   }
 
-  void _showModalSheet() {
+  void _modalSheet() {
     showModalBottomSheet(
         context: context,
         builder: (builder) {
           return Container(
             height: MediaQuery.of(context).size.height / 5,
             child: Center(
-                child: ButtonBar(
-                  mainAxisSize: MainAxisSize.min,
+                child: Column(
                   children: <Widget>[
-                    new RaisedButton(
-                      child: new Icon(Icons.play_arrow),
-                      onPressed: null,
-                    ),
-                    new RaisedButton(
-                      child: new Icon(Icons.pause),
-                      onPressed: null,
-                    ),
-                    new RaisedButton(
-                      child: new Icon(Icons.stop),
-                      onPressed: null,
-                    ),
+                    _crearSlider(),
+                    ButtonBar(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new RaisedButton(
+                          child: new Icon(Icons.play_arrow),
+                          onPressed: null,
+                        ),
+                        new RaisedButton(
+                          child: new Icon(Icons.pause),
+                          onPressed: null,
+                        ),
+                        new RaisedButton(
+                          child: new Icon(Icons.stop),
+                          onPressed: null,
+                        ),
+                      ],
+            ),
                   ],
-            )),
+                )),
           );
         });
+  }
+
+  Widget _crearSlider() {
+    return Slider(
+      activeColor: Colors.indigoAccent,
+      label: "Tamaño de la imagen =",
+      value: 50.5,
+      min: 30.0,
+      max: 400.0,
+    );
+  }
+
+  void modalListener(BuildContext context) {
+    _soundManager.audioPlayer.onAudioPositionChanged.listen((Duration d) => {
+      setState(() => print(d))
+    });
+    _soundManager.audioPlayer.onPlayerStateChanged.listen((AudioPlayerState state) => {
+      _modalController(context,state)
+    });
+    
+  }
+
+  void _modalController(BuildContext context, AudioPlayerState state) {
+    print("Estate $state");
+    switch (state) {
+      case AudioPlayerState.PLAYING:
+      print("playing");
+         _modalSheet();
+         print(_valorSlider);
+        break;
+      case AudioPlayerState.COMPLETED:
+        print("completed");
+        Navigator.of(context).pop();
+        break;
+      default:
+    }
   }
 }

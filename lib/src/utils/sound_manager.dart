@@ -2,13 +2,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class SoundManager {
   AudioPlayer audioPlayer = new AudioPlayer();
 
-  Future playLocal(localFileName) async {
+  Future playLocal(localFileName, BuildContext context) async {
     final dir = await getApplicationDocumentsDirectory();
     final file = new File("${dir.path}/$localFileName");
     if (!(await file.exists())) {
