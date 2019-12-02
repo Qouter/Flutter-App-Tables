@@ -48,8 +48,8 @@ class _SoundsPageState extends State<SoundsPage> {
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 ///no.of items in the horizontal axis
                 crossAxisCount: 14,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
               ),
 
               ///Lazy building of list
