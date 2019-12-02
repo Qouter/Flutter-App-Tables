@@ -11,61 +11,64 @@ class SoundsPage extends StatefulWidget {
 class _SoundsPageState extends State<SoundsPage> {
 
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
+  
   SoundManager _soundManager = new SoundManager();
   Duration _valorSlider = Duration(seconds: 200);
   Duration _maxTimeinSound = Duration(seconds: 1);
   Duration _currentTimeinSound = Duration(seconds: 0);
   int _currentTable = 0;
+  List<Widget> _tablesPending = [];
 
   @override
   void initState() {
     _modalListener(context);
+    _generateTables();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Soundspage"),
+        title: Text("Caller"),
       ),
       endDrawer: Drawer(
         elevation: 20.0,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            ListTile(
-              title: Text("Uno"),
-            ),
-            ListTile(
-              title: Text("Dos"),
+        child: Container(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: _tablesPending,
+          ),
+          margin: const EdgeInsets.only(top: 80.0),
+        ),
+      ),
+      body: Container(
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                ///no.of items in the horizontal axis
+                crossAxisCount: 14,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20,
+              ),
+
+              ///Lazy building of list
+              delegate:
+                  SliverChildBuilderDelegate((BuildContext context, int index) {
+                /// To convert this infinite list to a list with "n" no of items,
+                /// uncomment the following line:
+                index += 1;
+                return listItem(Colors.blue, index, context);
+              }, 
+              childCount: 99,
+
+                      /// Set childCount to limit no.of items
+                      /// childCount: 100,
+                      ),
             )
           ],
         ),
-      ),
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              ///no.of items in the horizontal axis
-              crossAxisCount: 4,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-            ),
-
-            ///Lazy building of list
-            delegate:
-                SliverChildBuilderDelegate((BuildContext context, int index) {
-              /// To convert this infinite list to a list with "n" no of items,
-              /// uncomment the following line:
-              index += 1;
-              return listItem(Colors.blue, index, context);
-            }, childCount: 99
-
-                    /// Set childCount to limit no.of items
-                    /// childCount: 100,
-                    ),
-          )
-        ],
+        margin: const EdgeInsets.all(15.0),
       ),
     );
   }
@@ -91,7 +94,8 @@ class _SoundsPageState extends State<SoundsPage> {
             fontWeight: FontWeight.bold),
       ),
     ),
-    onPressed: () => _playAudio(title, context),
+    //onPressed: () => _playAudio(title, context),
+    onPressed:  () => _showAlert(context, title),
   );
 
   Color getRandomColor() {
@@ -172,5 +176,55 @@ class _SoundsPageState extends State<SoundsPage> {
         break;
       default:
     }
+  }
+
+  void _generateTables() {
+    for (var table = 1; table < 6; table++) {
+      final tempTable = ListTile(
+        title: Text("Mesa $table"),
+        leading: Icon(Icons.av_timer),
+        onTap: () {}
+      );
+      _tablesPending.add(tempTable);
+    }
+  }
+
+  void _showAlert(BuildContext context, int table) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(20.0)),
+          title: Text("Añadir"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text("Añadir mesa $table a la cola"),
+            ],
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Cancelar"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            FlatButton(
+              child: Text("Ok"),
+              onPressed: () => _addTable(context, table),
+            )
+          ],
+        );
+      }
+    );
+  }
+
+  void _addTable(BuildContext context, int table) {
+    final tableTemp = ListTile(
+        title: Text("Mesa $table"),
+        leading: Icon(Icons.av_timer),
+        onTap: () {}
+    );
+    _tablesPending.add(tableTemp);
+    Navigator.of(context).pop();
   }
 }
