@@ -1,5 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:observable/observable.dart';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:app_components/src/utils/sound_manager.dart';
@@ -8,21 +10,70 @@ class SoundsPage extends StatefulWidget {
   _SoundsPageState createState() => _SoundsPageState();
 }
 
+class TableResource extends SoundsPage{
+  List<int> tablesList = [1];
+
+  List <Widget> get tables {
+
+    List<Widget> listTables = [];
+    for (var table = 0; table < tablesList.length; table++) {
+      final tempTable = ListTile(
+        title: Text("Mesa "+tablesList[table].toString()),
+        leading: Icon(Icons.av_timer),
+        onTap: () => {},
+      );
+      listTables.add(tempTable);
+    }
+    return listTables;
+  }
+
+  List<int> getTableListInt() {
+    return tablesList;
+  }
+
+  void addTable(BuildContext context, int table) {
+    tablesList.add(table);
+    Navigator.of(context).pop();
+  }
+
+  bool tableInListPenging(int table){
+    print(table);
+    for (var i = 0; i < tablesList.length; i++) {
+      if(tablesList[i] == table) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void deleteTableFromList(int table) {
+    for (var i = 0; i < tablesList.length; i++) {
+      if(tablesList[i] == table) {
+        tablesList.removeAt(i);
+      }
+    }
+  }
+}
+
 class _SoundsPageState extends State<SoundsPage> {
 
+  TableResource _tableObject = new TableResource();
   GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
-  
   SoundManager _soundManager = new SoundManager();
   Duration _valorSlider = Duration(seconds: 200);
   Duration _maxTimeinSound = Duration(seconds: 1);
   Duration _currentTimeinSound = Duration(seconds: 0);
   int _currentTable = 0;
-  List<Widget> _tablesPending = [];
+  List <int> _tablesPending = [];
+  List <Widget> _tablesPendingTile = [];
+  //User Variables
+  int _numberOfTables = 99;
+  int _secondsRepetitionCaller = 5;
 
   @override
   void initState() {
     _modalListener(context);
-    _generateTables();
+    _tablesListener(context);
   }
 
   @override
@@ -36,7 +87,7 @@ class _SoundsPageState extends State<SoundsPage> {
         child: Container(
           child: ListView(
             padding: EdgeInsets.zero,
-            children: _tablesPending,
+            children: _tableObject.tables,
           ),
           margin: const EdgeInsets.only(top: 80.0),
         ),
@@ -55,16 +106,13 @@ class _SoundsPageState extends State<SoundsPage> {
               ///Lazy building of list
               delegate:
                   SliverChildBuilderDelegate((BuildContext context, int index) {
-                /// To convert this infinite list to a list with "n" no of items,
-                /// uncomment the following line:
-                index += 1;
-                return listItem(Colors.blue, index, context);
-              }, 
-              childCount: 99,
-
-                      /// Set childCount to limit no.of items
-                      /// childCount: 100,
-                      ),
+                    /// To convert this infinite list to a list with "n" no of items,
+                    /// uncomment the following line:
+                    index += 1;
+                    return listItem(Colors.blue, index, context);
+                  }, 
+                  childCount: _numberOfTables,
+                  ),
             )
           ],
         ),
@@ -82,8 +130,24 @@ class _SoundsPageState extends State<SoundsPage> {
     _soundManager.pauseLocal("$_currentTable.mp3");
   }
 
+  void _tablesListener(BuildContext context) {
+    Timer.periodic(Duration(seconds: _secondsRepetitionCaller), (Timer t) => {
+      _callPendingTables(context)
+    });
+  }
+
+  Future _callPendingTables(BuildContext context) async {
+    List<int> listTable = _tableObject.getTableListInt();
+    if(listTable.length > 0) {
+      for (var i = 0; i < listTable.length; i++) {
+        await _playAudio(listTable[i], context);
+      }
+    }
+  }
+
+
   Widget listItem(Color color, int title, BuildContext context) => FlatButton(
-    color: getRandomColor(),
+    color: _setTableColor(title),
     child: Center(
       child: Text(
         "$title",
@@ -95,8 +159,28 @@ class _SoundsPageState extends State<SoundsPage> {
       ),
     ),
     //onPressed: () => _playAudio(title, context),
-    onPressed:  () => _showAlert(context, title),
+    onPressed:  () => _tapInTable(context, title),
   );
+
+  Color _setTableColor(int table) {
+    if(_tableObject.tableInListPenging(table)) {
+      return Colors.red;
+    }
+    else {
+      return getRandomColor();
+    }
+  }
+
+  void _tapInTable(BuildContext context,int table) {
+    if(_tableObject.tableInListPenging(table)) {
+      setState(() {
+        _tableObject.deleteTableFromList(table);
+      });
+    }
+    else {
+      _showAlert(context, table);
+    }
+  }
 
   Color getRandomColor() {
     final random = Random();
@@ -178,17 +262,6 @@ class _SoundsPageState extends State<SoundsPage> {
     }
   }
 
-  void _generateTables() {
-    for (var table = 1; table < 6; table++) {
-      final tempTable = ListTile(
-        title: Text("Mesa $table"),
-        leading: Icon(Icons.av_timer),
-        onTap: () {}
-      );
-      _tablesPending.add(tempTable);
-    }
-  }
-
   void _showAlert(BuildContext context, int table) {
     showDialog(
       context: context,
@@ -210,7 +283,7 @@ class _SoundsPageState extends State<SoundsPage> {
             ),
             FlatButton(
               child: Text("Ok"),
-              onPressed: () => _addTable(context, table),
+              onPressed: () => setState((){_tableObject.addTable(context, table);}),
             )
           ],
         );
@@ -218,13 +291,4 @@ class _SoundsPageState extends State<SoundsPage> {
     );
   }
 
-  void _addTable(BuildContext context, int table) {
-    final tableTemp = ListTile(
-        title: Text("Mesa $table"),
-        leading: Icon(Icons.av_timer),
-        onTap: () {}
-    );
-    _tablesPending.add(tableTemp);
-    Navigator.of(context).pop();
-  }
 }
