@@ -1,6 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:observable/observable.dart';
 import 'dart:async';
 import 'dart:math';
 
