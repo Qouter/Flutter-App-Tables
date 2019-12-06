@@ -67,7 +67,7 @@ class _SoundsPageState extends State<SoundsPage> {
   List <Widget> _tablesPendingTile = [];
   //User Variables
   int _numberOfTables = 99;
-  int _secondsRepetitionCaller = 5;
+  int _secondsRepetitionCaller = 25;
 
   @override
   void initState() {
@@ -133,13 +133,17 @@ class _SoundsPageState extends State<SoundsPage> {
     Timer.periodic(Duration(seconds: _secondsRepetitionCaller), (Timer t) => {
       _callPendingTables(context)
     });
+
   }
 
   Future _callPendingTables(BuildContext context) async {
     List<int> listTable = _tableObject.getTableListInt();
+    print("CALLING");
     if(listTable.length > 0) {
       for (var i = 0; i < listTable.length; i++) {
-        await _playAudio(listTable[i], context);
+        await new Future.delayed(const Duration(seconds: 5));
+        _playAudio(listTable[i], context);
+        print("afterCall");
       }
     }
   }
@@ -199,7 +203,7 @@ class _SoundsPageState extends State<SoundsPage> {
         context: context,
         builder: (builder) {
           return Container(
-            height: MediaQuery.of(context).size.height / 6,
+            height: MediaQuery.of(context).size.height / 9,
             child: Center(
                 child: Column(
               children: <Widget>[
@@ -242,7 +246,7 @@ class _SoundsPageState extends State<SoundsPage> {
   }
 
   void setCorrectPosition(Duration d) {
-    print(double.parse(d.toString()));
+    //print(double.parse(d.toString()));
   }
 
   void _modalController(BuildContext context, AudioPlayerState state) {
