@@ -36,7 +36,6 @@ class TableResource extends SoundsPage{
   }
 
   bool tableInListPenging(int table){
-    print(table);
     for (var i = 0; i < tablesList.length; i++) {
       if(tablesList[i] == table) {
         return true;
@@ -65,9 +64,13 @@ class _SoundsPageState extends State<SoundsPage> {
   int _currentTable = 0;
   List <int> _tablesPending = [];
   List <Widget> _tablesPendingTile = [];
+  bool showFab = true;
+  String _playerState = "Waiting";
+  int _playingTable;
   //User Variables
   int _numberOfTables = 99;
   int _secondsRepetitionCaller = 25;
+
 
   @override
   void initState() {
@@ -75,11 +78,21 @@ class _SoundsPageState extends State<SoundsPage> {
     _tablesListener(context);
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Caller"),
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(right: 20.0),
+              child: Text("$_playerState"),
+            ),
+          ],
+        ),
       ),
       endDrawer: Drawer(
         elevation: 20.0,
@@ -117,6 +130,38 @@ class _SoundsPageState extends State<SoundsPage> {
         ),
         margin: const EdgeInsets.all(15.0),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (builder) {
+              return Container(
+                height: MediaQuery.of(context).size.height / 7,
+                child: Center(
+                  child: Column(
+                    children: <Widget>[
+                      _crearSlider(),
+                    ],
+                  )
+                ),
+              );
+            }
+          );
+        },
+        child: Icon(Icons.expand_less),
+      )
+    );
+  }
+
+  Widget _crearSlider() {
+    return Container(
+      child: Slider(
+        activeColor: Colors.indigoAccent,
+        label: "Tamaño de la imagen = $_valorSlider",
+        value: 70.0,
+        min: 30.0,
+        max: 400.0,
+      ),
     );
   }
 
@@ -141,8 +186,10 @@ class _SoundsPageState extends State<SoundsPage> {
     print("CALLING");
     if(listTable.length > 0) {
       for (var i = 0; i < listTable.length; i++) {
+        //Logic to Know What table is playing
         await new Future.delayed(const Duration(seconds: 5));
         _playAudio(listTable[i], context);
+        _playingTable = listTable[i];
         print("afterCall");
       }
     }
@@ -198,43 +245,6 @@ class _SoundsPageState extends State<SoundsPage> {
     return listColors[random.nextInt(listColors.length)];
   }
 
-  void _modalSheet() {
-    showModalBottomSheet(
-        context: context,
-        builder: (builder) {
-          return Container(
-            height: MediaQuery.of(context).size.height / 9,
-            child: Center(
-                child: Column(
-              children: <Widget>[
-                _crearSlider(),
-                ButtonBar(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    new RaisedButton(
-                      child: new Icon(Icons.play_arrow),
-                      onPressed: null,
-                    ),
-                  ],
-                ),
-              ],
-            )),
-          );
-        });
-  }
-
-  Widget _crearSlider() {
-    return AnimatedContainer(
-      duration: _maxTimeinSound,
-      width: (double.parse(_currentTimeinSound.inMilliseconds.toString()) /
-              double.parse(_maxTimeinSound.inMilliseconds.toString())) *
-          600,
-      height: 10.0,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20.0), color: Colors.lightBlue),
-    );
-  }
-
   void _modalListener(BuildContext context) {
     _soundManager.audioPlayer.onDurationChanged.listen((Duration d) {
       _maxTimeinSound = d;
@@ -242,7 +252,21 @@ class _SoundsPageState extends State<SoundsPage> {
     _soundManager.audioPlayer.onAudioPositionChanged
         .listen((Duration d) => {_currentTimeinSound = d});
     _soundManager.audioPlayer.onPlayerStateChanged
-        .listen((AudioPlayerState state) => {_modalController(context, state)});
+        .listen((AudioPlayerState state) => {
+          setTitle(state)
+        });
+  }
+
+  void setTitle(state) {
+    setState(() {
+      print(state);
+      if(state.toString() == "AudioPlayerState.PLAYING") {
+        _playerState = "Llamando a mesa " + _playingTable.toString(); 
+      }
+      else {
+        _playerState = "Esperando...";
+      }
+    });
   }
 
   void setCorrectPosition(Duration d) {
@@ -254,7 +278,6 @@ class _SoundsPageState extends State<SoundsPage> {
     switch (state) {
       case AudioPlayerState.PLAYING:
         print("playing");
-        _modalSheet();
         print(_valorSlider);
         break;
       case AudioPlayerState.COMPLETED:
