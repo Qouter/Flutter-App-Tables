@@ -190,7 +190,6 @@ class _SoundsPageState extends State<SoundsPage> {
         await new Future.delayed(const Duration(seconds: 5));
         _playAudio(listTable[i], context);
         _playingTable = listTable[i];
-        print("afterCall");
       }
     }
   }
@@ -217,7 +216,7 @@ class _SoundsPageState extends State<SoundsPage> {
       return Colors.red;
     }
     else {
-      return getRandomColor();
+      return Colors.blue[300];
     }
   }
 

@@ -1,28 +1,43 @@
 import 'package:flutter/material.dart';
 
-class AlertPage extends StatelessWidget {
+class AlertPage extends StatefulWidget {
+
+  @override
+  _AlertPageState createState() => _AlertPageState();
+}
+
+class _AlertPageState extends State<AlertPage> {
+  final _textFieldController = TextEditingController();
+
+  @override
+  void dispose() { 
+    _textFieldController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Alert Page"),
-      ),
       body: Center(
-        child: RaisedButton(
-          child: Text("Mostrar alerta"),
-          color: Colors.blue,
-          textColor: Colors.white,
-          shape: StadiumBorder(),
-          onPressed: () => _mostrarAlerta(context),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            new Image.asset(
+              'assets/logo.jpeg',
+              width: 250.0,
+              height: 250.0,
+            ),
+            RaisedButton(
+              child: Text("Iniciar Sesión"),
+              color: Colors.black,
+              textColor: Colors.white,
+              shape: StadiumBorder(),
+              onPressed: () => _mostrarAlerta(context),
+            ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add_location),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
+      backgroundColor: Color.fromARGB(255, 149, 162, 241),
     ); 
   }
 
@@ -33,12 +48,14 @@ class AlertPage extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(20.0)),
-          title: Text("Título"),
+          title: Text("Iniciar sesión"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text("Este es el contenido"),
-              FlutterLogo(size: 100.0,)
+              TextField(
+                controller: _textFieldController,
+                decoration: InputDecoration(hintText: "Introducir contraseña"),
+              ),
             ],
           ),
           actions: <Widget>[
@@ -48,11 +65,18 @@ class AlertPage extends StatelessWidget {
             ),
             FlatButton(
               child: Text("Ok"),
-              onPressed: (){},
+              //onPressed: (){ Navigator.pushNamed(context, "sounds");},
+              onPressed: (){ _loggin(context, _textFieldController.text);},
             )
           ],
         );
       }
     );
+  }
+
+  void _loggin(BuildContext context, String textInput) {
+    if(textInput == "password") {
+      Navigator.pushNamed(context, "sounds");
+    }
   }
 }
