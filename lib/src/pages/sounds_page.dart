@@ -10,7 +10,7 @@ class SoundsPage extends StatefulWidget {
 }
 
 class TableResource extends SoundsPage{
-  List<int> tablesList = [1];
+  List<int> tablesList = [];
 
   List <Widget> get tables {
 
@@ -130,26 +130,6 @@ class _SoundsPageState extends State<SoundsPage> {
         ),
         margin: const EdgeInsets.all(15.0),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            builder: (builder) {
-              return Container(
-                height: MediaQuery.of(context).size.height / 7,
-                child: Center(
-                  child: Column(
-                    children: <Widget>[
-                      _crearSlider(),
-                    ],
-                  )
-                ),
-              );
-            }
-          );
-        },
-        child: Icon(Icons.expand_less),
-      )
     );
   }
 
@@ -183,7 +163,6 @@ class _SoundsPageState extends State<SoundsPage> {
 
   Future _callPendingTables(BuildContext context) async {
     List<int> listTable = _tableObject.getTableListInt();
-    print("CALLING");
     if(listTable.length > 0) {
       for (var i = 0; i < listTable.length; i++) {
         //Logic to Know What table is playing
@@ -258,7 +237,6 @@ class _SoundsPageState extends State<SoundsPage> {
 
   void setTitle(state) {
     setState(() {
-      print(state);
       if(state.toString() == "AudioPlayerState.PLAYING") {
         _playerState = "Llamando a mesa " + _playingTable.toString(); 
       }
@@ -308,7 +286,7 @@ class _SoundsPageState extends State<SoundsPage> {
             ),
             FlatButton(
               child: Text("Ok"),
-              onPressed: () => setState((){_tableObject.addTable(context, table);}),
+              onPressed: () => setState((){_tableObject.addTable(context, table); _playingTable = table; _playAudio(table,context);}),
             )
           ],
         );
